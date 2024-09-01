@@ -1,0 +1,38 @@
+.mobile-block {
+  display: none;
+}
+.q-drawer-container {
+  display: none;
+}
+.mobile-none {
+  display: block;
+}
+@media (max-width: 1000px) {
+  .web-header-container:hover {
+    .menu-list-container {
+      display: none;
+    }
+  }
+
+  .mobile-none {
+    display: none;
+  }
+  .page-container {
+    margin-top: 64px;
+  }
+  .mobile-block {
+    display: block;
+  }
+  .web-header {
+    // display: none;
+    width: 100%;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .toolbar-menu {
+    display: none;
+  }
+}
+
+

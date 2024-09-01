@@ -1,0 +1,335 @@
+
+.web-header-container {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 900;
+  background-color: #ffffff;
+  display: flex;
+  gap: 60px;
+}
+.web-header {
+  width: 1280px;
+  height: 80px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 64px;
+}
+.page-container {
+  margin-top: 80px;
+}
+.header-menu-backdrop {
+  display: none;
+}
+.menu-list-container {
+  display: none;
+  position: absolute;
+  z-index: 900;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  padding-bottom: 20px;
+  background-color: #ffffff;
+  // border-radius: 0 0 32px 32px;
+  // border: 1px solid #999999
+}
+.menu-list-box {
+  width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
+}
+.menu-list-wrap {
+  .menu-list {
+    font-size: 16px;
+    // font-weight: 900;
+    padding: 8px 30px;
+    // text-align: center;
+    cursor: pointer;
+  }
+  :hover {
+    font-weight: 900;
+  }
+  .list-title {
+    color: #999999;
+    cursor: default;
+    font-weight: 900;
+  }
+  .list-title:hover {
+    background-color: transparent;
+  }
+}
+.logo_img {
+  width: 140px;
+  cursor: pointer;
+  img {
+    width: 140px;
+    padding: 0 20px;
+  }
+}
+
+.toolbar-menu {
+  width: calc(100% - 140px);
+  display: flex;
+  .menu-item {
+    width: calc(100% / 5);
+    .menu-title{
+      font-size: 16px;
+      font-weight: 900;
+      padding: 0 30px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .menu-title:hover {
+      color: var(--main-color);
+    }
+  }
+}
+//********************** web 상단 헤더 메뉴
+.menu-item-list {
+  display: flex;
+  width: calc(100% - 204px);
+  section {
+    width: calc(100% / 5);
+  }
+}
+
+.web-header-container:hover {
+  .menu-list-container {
+    display: block;
+  }
+
+}
+.menu-event {
+  width: 204px;
+  padding:20px 30px;
+  background-color: #f4f5f7;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  .event-title {
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .event-btn {
+    color: #ffffff;
+    font-weight: 900;
+    background-color: #18CD8C;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  .event-img {
+    width: 150px;
+    padding: 20px 0;
+    position: relative;
+    animation: move 1.5s infinite;
+    img {
+      width: 100%;
+    }
+  }
+}
+
+@keyframes move {
+  0% {
+    top: 0px;
+  }
+  50% {
+    top: 10px;
+  }
+  100% {
+    top: 0px;
+  }
+}
+//  ******************************* index
+.carousel_section_1 {
+  background-color: #eff5ff;
+}
+.carousel_section_2 {
+  background-color: #eafaf3;
+  .carousel_box::after {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    bottom: auto;
+    left: auto;
+    -webkit-transform: translate(66%, -50%);
+    -ms-transform: translate(66%, -50%);
+    transform: translate(66%, -50%);
+    display: block;
+    width: 1858px;
+    height: 1855px;
+    background: url('src/img/carousel_img_4.svg');
+    content: '';
+  }
+}
+.carousel_section_3 {
+  background: linear-gradient(91deg, #0099ff 0%, #ff8a84 90%);
+}
+.carousel_section_4 {
+  background-color: #cbf8e7;
+  .carousel_box {
+    .carousel_img_box {
+      width: 600px;
+    }
+  }
+}
+.carousel_box {
+  position: relative;
+  width: 100%;
+  max-width: 946px;
+  margin: 0 auto;
+  padding: 122px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  .carousel_img_box {
+    position: absolute;
+    right: 0;;
+    width: 480px;
+  }
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .carousel_text {
+    z-index: 100;
+    font-size: 3rem;
+    font-weight: 500;
+    line-height: 1.1;
+    padding: 0 30px;
+    .carousel_strong {
+      font-size: 3.4rem;
+      font-weight: 900;
+    }
+    .carousel_sub_text {
+      font-size: 20px;
+      line-height: 3;
+    }
+    .carousel_btn {
+    border: none;
+    color: #ffb701;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 900;
+    display: flex;
+    justify-content: center;
+    width: 200px;
+    padding: 12px 19px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, .1);
+    background-color: #fff;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 6px;    }
+  }
+}
+
+.carousel_btn_radius {
+  color: #121212;
+  background-color: #ffbe4c;
+  border: none;
+}
+
+.carousel_more_btn {
+  color: #13bd7e;
+  border: 1px solid #13bd7e;
+  background: #fff;
+}
+.carousel_check_btn {
+  color: #ffffff;
+  background: #877af5;
+  border: none;
+}
+.default-btn {
+  width: 200px;
+  border-radius: 50px;
+  padding: 12px 19px;
+  font-size: 16px;
+  font-weight: 400;
+  box-shadow: 0 4px 9px rgba(0, 0, 0, .15);
+  cursor: pointer;
+}
+
+.carousel_container {
+  height: 480px;
+}
+
+.index_section {
+  min-height: 300px;
+}
+.index_text_box{
+  background-color: #f9fafb;
+  padding: 160px 0;
+  flex-direction: column;
+  -webkit-box-pack: start;
+  display: flex;
+  justify-content: flex-start;
+  // border: 1px solid;
+  .index-text {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: #191f28;
+    text-align: center;
+    // margin-bottom: 50px;
+  }
+}
+
+.index_section:nth-child(2) .index_text_box {
+  background-color: #ffffff;
+}
+.index_content_box {
+  padding: 40px 0 40px;
+  text-align: center;
+}
+.index_img_wrap {
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  li {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    p {
+      width: 240px;
+      height: 100px;
+      font-size: 15px;
+      text-align: center;
+    }
+  }
+}
+
+.index_img_box {
+  width: 140px;
+  height: 140px;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.content_main {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1;
+}
+.content_sub {
+  font-size: 18px;
+  color: #999999;
+}

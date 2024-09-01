@@ -1,0 +1,175 @@
+@font-face {
+  font-family: 'Freesentation-9Black';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/*       color      */
+:root {
+  --main-background: #F8F8F8;
+  --main-black-color: #121212;
+  --main-color: #F08200;
+  --page-background: #f3f5f7;
+  // --main-color: #0c88ff;
+}
+
+* {
+  font-family: 'Pretendard-Regular';
+  // font-family: 'Pretendard-Regular';
+  font-size: 14px;
+}
+/*       flex      */
+.d-flex {
+  display: flex;
+}
+
+.flex-c {
+  display: flex;
+  flex-direction: column;
+}
+.flex-r {
+  display: flex;
+  flex-direction: revert !important;
+}
+.jcsb {
+  justify-content: space-between !important;
+}
+.jcs {
+  justify-content: start;
+}
+.jce {
+  justify-content: flex-end;
+}
+.jcc {
+  justify-content: center;
+}
+.jcsa {
+  justify-content: space-around;
+}
+.jcse {
+  justify-content: space-evenly;
+}
+.aic {
+  align-items: center;
+}
+.aife {
+  align-items: flex-end;
+}
+.aifs {
+  align-items: flex-start !important;
+}
+.aib {
+  align-items: baseline;
+}
+.ais {
+  align-items: stretch;
+}
+.flex1 {
+  flex: 1;
+}
+
+/*       크기     */
+.w100 {
+  width: 100% !important;
+}
+.h100 {
+  height: 100% !important;
+}
+
+/*       margin, padding, gap     */
+$x: 1;
+@while $x < 99 {
+  .pl#{$x} {
+    padding-left: 1px * $x !important;
+  }
+  .pr#{$x} {
+    padding-right: 1px * $x !important;
+  }
+  .pt#{$x} {
+    padding-top: 1px * $x !important;
+  }
+  .pb#{$x} {
+    padding-bottom: 1px * $x !important;
+  }
+  .pa#{$x} {
+    padding: 1px * $x !important;
+  }
+  .ml#{$x} {
+    margin-left: 1px * $x !important;
+  }
+  .mr#{$x} {
+    margin-right: 1px * $x !important;
+  }
+  .mt#{$x} {
+    margin-top: 1px * $x !important;
+  }
+  .mb#{$x} {
+    margin-bottom: 1px * $x !important;
+  }
+  .ma#{$x} {
+    margin: 1px * $x !important;
+  }
+  .g#{$x} {
+    gap: 1px * $x !important;
+  }
+  $x: $x + 1;
+}
+
+/*        background       */
+
+.container {
+  // width: 1280px;
+  width: 100%;
+  // margin: 0 auto;
+  // border: 1px solid #dddddd;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ol {
+  padding: 0;
+}
+
+p {
+  margin: 0;
+}
+
+
+// ******************************************************************************
+.btn {
+  border: none;
+  padding: 4px 16px;
+}
+
+.common-container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+.common-container-1 {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+.page-section {
+  background-color: #ffffff;
+  padding: 24px;
+  margin: 10px 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+.page-background {
+  background-color: var(--page-background);
+}

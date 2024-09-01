@@ -1,0 +1,31 @@
+
+.q-panel > div {
+  overflow: hidden;
+}
+
+.q-btn .q-icon {
+  font-size: inherit;
+}
+
+.q-layout__section--marginal{
+  background-color: #F2C037;
+}
+.q-btn__content {
+  font-size: 24px;
+}
+.q-btn--dense.q-btn--round {
+  padding: 16px;
+}
+.q-page-container {
+  padding-top: 0 !important;
+  padding-left: 0 !important;
+}
+.q-tab--active {
+  color: var(--main-color);
+  .q-tab__label {
+  }
+}
+.q-tab__indicator {
+  display: none;
+}
+
