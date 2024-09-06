@@ -1,264 +1,393 @@
 <template>
   <q-layout class="page-container page-background">
-    <q-page class="common-container">
+    <q-page class="common-container-1">
+      <div class="main-container">
+        <q-card flat bordered class="q-pa-md">
+          <q-card-section>
+            <div class="text-h5 q-mb-md">차량 이미지 등록</div>
 
-        <!-- 광고와 로그인 영역 -->
-        <div class="ad-login-container">
-          <!-- 광고 영역 -->
-          <div class="ad-section">
-            <img src="https://daimg.encar.com/da/202408/volvo/volvo_maintop_240729.jpg" alt="Ad Banner" />
-          </div>
-
-          <!-- 로그인 또는 회원 정보 영역 -->
-          <div class="login-section" v-if="!isLoggedIn">
-            <input type="text" placeholder="아이디" class="login-input" v-model="username" />
-            <input type="password" placeholder="비밀번호" class="login-input" v-model="password" />
-            <button class="login-button" @click="LoginAction()">로그인</button>
-          </div>
-
-          <div class="user-info-section" v-else>
-            <div class="user-box">
-              <div class="user-main">
-                <div>
-                  <span class="user-name">{{ username }}</span>님
-                </div>
-                <div class="user-right">
-                  <div>
-                    내차팔기
+            <!-- 이미지 업로더 -->
+            <q-uploader
+              url="http://localhost:4444/upload"
+              label="차량 이미지 등록"
+              multiple
+              @added="onFilesAdded"
+              @removed="onFileRemoved"
+              @removedAll="onAllFilesRemoved"
+              accept="image/*"
+              color="red-6"
+            >
+              <template v-slot:header="scope">
+                <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                  <q-btn
+                    v-if="scope.queuedFiles.length > 0"
+                    icon="clear_all"
+                    @click="() => { scope.removeQueuedFiles(); onAllFilesRemoved(); }"
+                    round
+                    dense
+                    flat
+                  >
+                    <q-tooltip>Clear All</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    v-if="scope.uploadedFiles.length > 0"
+                    icon="done_all"
+                    @click="() => { scope.removeUploadedFiles(); onAllFilesRemoved(); }"
+                    round
+                    dense
+                    flat
+                  >
+                    <q-tooltip>Remove Uploaded Files</q-tooltip>
+                  </q-btn>
+                  <q-spinner
+                    v-if="scope.isUploading"
+                    class="q-uploader__spinner"
+                  />
+                  <div class="col">
+                    <div class="q-uploader__title">
+                      + 버튼을 눌러 차량 사진을 등록해주세요.
+                    </div>
+                    <div class="q-uploader__subtitle">
+                      {{ scope.uploadSizeLabel }} / {{ scope.uploadProgressLabel }}
+                    </div>
                   </div>
-                  <div class="logout-btn" @click="Logout()">
-                    로그아웃
-                  </div>
+                  <q-btn
+                    v-if="scope.canAddFiles"
+                    type="a"
+                    icon="add_box"
+                    @click="scope.pickFiles"
+                    round
+                    dense
+                    flat
+                  >
+                    <q-uploader-add-trigger />
+                    <q-tooltip>Pick Files</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    v-if="scope.canUpload"
+                    icon="cloud_upload"
+                    @click="scope.upload"
+                    round
+                    dense
+                    flat
+                  >
+                    <q-tooltip>Upload Files</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    v-if="scope.isUploading"
+                    icon="clear"
+                    @click="scope.abort"
+                    round
+                    dense
+                    flat
+                  >
+                    <q-tooltip>Abort Upload</q-tooltip>
+                  </q-btn>
                 </div>
+              </template>
+            </q-uploader>
+
+            <!-- 썸네일 미리보기 -->
+            <div class="q-gutter-md q-mt-md row q-col-gutter-md q-col-6 q-col-sm-4 q-col-md-3">
+              <div
+                v-for="(image, index) in imagePreviews"
+                :key="image.id"
+                class="col-6 col-sm-4 col-md-3"
+              >
+                <q-img
+                  :src="image.url"
+                  :alt="'차량 이미지 ' + (index + 1)"
+                  style="max-height: 100px;"
+                  class="full-width"
+                />
               </div>
+            </div>
 
-              <div class="user-stat">
-                <div class="stat-line">
-                  <div class="stat-div">
-                    <span>판매중</span>
-                    <span class="right-scor"><span class="car-int">0</span>대</span>
-                  </div>
-                  <div class="stat-div">
-                    <span>등록대기</span>
-                    <span class="right-scor"><span class="font-bold">0</span>대</span>
-                  </div>
-                  <div class="stat-div">
-                    <span>홈서비스</span>
-                    <span class="right-scor">보기</span>
-                  </div>
-                </div>
-                <div class="stat-line">
-                  <div class="stat-div">
-                    <span>구매문의</span>
-                    <span class="right-scor"><span class="font-bold">0</span>건</span>
-                  </div>
-                  <div class="stat-div">
-                    <span>관심차량</span>
-                    <span class="right-scor"><span class="font-bold">{{ InterestProductCount }}</span>대</span>
-                  </div>
-                  <div class="stat-div">
-                    <span>포인트</span>
-                    <span class="right-scor"><span class="font-bold">0</span>P</span>
-                  </div>
-                </div>
+          </q-card-section>
+        </q-card>
+
+        <q-card flat bordered class="q-pa-md">
+          <q-card-section>
+            <div class="text-h5 q-mb-md">차량 판매글 작성</div>
+
+            <!-- 차량 기본 정보 -->
+            <div class="q-gutter-md">
+              <div class="btn-line">
+                <q-btn
+                  class="category-btn"
+                  :class="{ active: activeButton === idx }"
+                  v-for="(item, idx) in ManufactuerOptions"
+                  :key="idx"
+                  @click="selectManufacturer(item, idx)"
+                >
+                  {{ item }}
+                </q-btn>
               </div>
+              <q-select
+                v-model="car.company"
+                :options="CompanyOptions"
+                label="제조사 선택"
+                outlined
+                @update:model-value="onCompanyChange"
+              />
+              <q-select
+                v-model="car.model"
+                :options="ModelOptions"
+                label="모델 선택"
+                outlined
+                @update:model-value="onModelChange"
+              />
+              <q-select
+                v-model="car.grade"
+                :options="GradeOptions"
+                label="세부모델 선택"
+                outlined
+              />
+              <q-input v-model="car.price" label="판매 가격 (만원)" outlined />
+              <q-input v-model="car.registration" label="차량 등록 번호" outlined />
+              <q-input v-model="car.mileage" label="주행거리 (km)" outlined />
+              <q-select v-model="car.fuelType" :options="fuelOptions" label="연료 종류" outlined />
+              <q-select v-model="car.transmission" :options="transmissionOptions" label="변속기" outlined />
+              <q-input
+                v-model="formattedYear"
+                label="연식 (년/월)"
+                outlined
+                @input="formatYear"
+              />
+              <q-input v-model="car.color" label="차량 색상" outlined />
+
+              <!-- 차량 옵션 -->
+              <q-card-section>
+                <div class="text-h6 q-mb-md">차량 외관옵션</div>
+
+                <q-expansion-item v-model="isOptionsExpanded" icon="directions_car" label="차량 외관 옵션" expand-separator>
+                <div class="q-gutter-md">
+                  <q-checkbox v-model="carOptions[0]" @update:model-value="updateOptions" label="HID 램프" />
+                  <q-checkbox v-model="carOptions[1]" @update:model-value="updateOptions" label="LED 램프" />
+                  <q-checkbox v-model="carOptions[2]" @update:model-value="updateOptions" label="어댑티브 램프" />
+                  <q-checkbox v-model="carOptions[3]" @update:model-value="updateOptions" label="하이빔" />
+                  <q-checkbox v-model="carOptions[4]" @update:model-value="updateOptions" label="전동 접이 사이드미러" />
+                  <q-checkbox v-model="carOptions[5]" @update:model-value="updateOptions" label="열선 사이드미러" />
+                  <q-checkbox v-model="carOptions[6]" @update:model-value="updateOptions" label="후진 각도조절 사이드미러" />
+                  <q-checkbox v-model="carOptions[7]" @update:model-value="updateOptions" label="썬루프" />
+                  <q-checkbox v-model="carOptions[8]" @update:model-value="updateOptions" label="듀얼 썬루프" />
+                  <q-checkbox v-model="carOptions[9]" @update:model-value="updateOptions" label="파노라마 썬루프" />
+                  <q-checkbox v-model="carOptions[10]" @update:model-value="updateOptions" label="와이퍼 결빙방지 윈드실드" />
+                  <q-checkbox v-model="carOptions[11]" @update:model-value="updateOptions" label="자외선 차단 윈드실드" />
+                  <q-checkbox v-model="carOptions[12]" @update:model-value="updateOptions" label="알루미늄휠" />
+                  <q-checkbox v-model="carOptions[13]" @update:model-value="updateOptions" label="크롬휠" />
+                  <q-checkbox v-model="carOptions[14]" @update:model-value="updateOptions" label="광폭타이어" />
+                </div>
+              </q-expansion-item>
+
+              <q-expansion-item v-model="isOptionsExpanded_in" icon="directions_car" label="차량 내장 옵션" expand-separator>
+                <div class="q-gutter-md">
+                  <q-checkbox v-model="CarInOptions[0]" @update:model-value="updateInOptions" label="가죽스티어링휠" />
+                  <q-checkbox v-model="CarInOptions[1]" @update:model-value="updateInOptions" label="우드스티어링휠" />
+                  <q-checkbox v-model="CarInOptions[2]" @update:model-value="updateInOptions" label="열선내장 스티어링 휠" />
+                  <q-checkbox v-model="CarInOptions[3]" @update:model-value="updateInOptions" label="직물시트" />
+                  <q-checkbox v-model="CarInOptions[4]" @update:model-value="updateInOptions" label="가죽시트" />
+                  <q-checkbox v-model="CarInOptions[5]" @update:model-value="updateInOptions" label="전동시트(운전석)" />
+                  <q-checkbox v-model="CarInOptions[6]" @update:model-value="updateInOptions" label="전동시트(동승석)" />
+                  <q-checkbox v-model="CarInOptions[7]" @update:model-value="updateInOptions" label="전동시트(뒷좌석)" />
+                  <q-checkbox v-model="CarInOptions[8]" @update:model-value="updateInOptions" label="열선시트(앞)" />
+                  <q-checkbox v-model="CarInOptions[9]" @update:model-value="updateInOptions" label="열선시트(뒤)" />
+                  <q-checkbox v-model="CarInOptions[10]" @update:model-value="updateInOptions" label="메모리시트(운전석)" />
+                  <q-checkbox v-model="CarInOptions[11]" @update:model-value="updateInOptions" label="메모리시트(동승석)" />
+                  <q-checkbox v-model="CarInOptions[12]" @update:model-value="updateInOptions" label="통풍시트(운전석)" />
+                  <q-checkbox v-model="CarInOptions[13]" @update:model-value="updateInOptions" label="통풍시트(동승석)" />
+                  <q-checkbox v-model="CarInOptions[14]" @update:model-value="updateInOptions" label="안마시트" />
+                  <q-checkbox v-model="CarInOptions[15]" @update:model-value="updateInOptions" label="ECM 룸미러" />
+                  <q-checkbox v-model="CarInOptions[16]" @update:model-value="updateInOptions" label="하이패스내장 룸미러" />
+                  <q-checkbox v-model="CarInOptions[17]" @update:model-value="updateInOptions" label="후방룸미러" />
+                  <q-checkbox v-model="CarInOptions[18]" @update:model-value="updateInOptions" label="풋파킹 브레이크" />
+                  <q-checkbox v-model="CarInOptions[19]" @update:model-value="updateInOptions" label="전자식파킹 브레이크" />
+                </div>
+              </q-expansion-item>
+
+              <q-expansion-item v-model="isOptionsExpanded_save" icon="directions_car" label="차량 안전 옵션" expand-separator>
+                <div class="q-gutter-md">
+                  <q-checkbox v-model="CarSaveOptions[0]" @update:model-value="updateSaveOptions" label="운전석에어백" />
+                  <q-checkbox v-model="CarSaveOptions[1]" @update:model-value="updateSaveOptions" label="동승석에어백" />
+                  <q-checkbox v-model="CarSaveOptions[2]" @update:model-value="updateSaveOptions" label="사이드에어백" />
+                  <q-checkbox v-model="CarSaveOptions[3]" @update:model-value="updateSaveOptions" label="커튼에어백" />
+                  <q-checkbox v-model="CarSaveOptions[4]" @update:model-value="updateSaveOptions" label="무릎보호에어백" />
+                  <q-checkbox v-model="CarSaveOptions[5]" @update:model-value="updateSaveOptions" label="전방감지센서" />
+                  <q-checkbox v-model="CarSaveOptions[6]" @update:model-value="updateSaveOptions" label="후방감지센서" />
+                  <q-checkbox v-model="CarSaveOptions[7]" @update:model-value="updateSaveOptions" label="전방카메라" />
+                  <q-checkbox v-model="CarSaveOptions[8]" @update:model-value="updateSaveOptions" label="후방카메라" />
+                  <q-checkbox v-model="CarSaveOptions[9]" @update:model-value="updateSaveOptions" label="차선이탈방지(LDWS)" />
+                  <q-checkbox v-model="CarSaveOptions[10]" @update:model-value="updateSaveOptions" label="어라운드뷰(AVM)" />
+                  <q-checkbox v-model="CarSaveOptions[11]" @update:model-value="updateSaveOptions" label="후측방경보시스템(BSD/BSW)" />
+                  <q-checkbox v-model="CarSaveOptions[12]" @update:model-value="updateSaveOptions" label="ABS 브레이크 잠김방지" />
+                  <q-checkbox v-model="CarSaveOptions[13]" @update:model-value="updateSaveOptions" label="TCS 미끄럼방지" />
+                  <q-checkbox v-model="CarSaveOptions[14]" @update:model-value="updateSaveOptions" label="VDC(ESP) 차체자세 제어" />
+                  <q-checkbox v-model="CarSaveOptions[15]" @update:model-value="updateSaveOptions" label="ECS 전자제어서스펜션" />
+                  <q-checkbox v-model="CarSaveOptions[16]" @update:model-value="updateSaveOptions" label="ESS 급제동경보시스템" />
+                  <q-checkbox v-model="CarSaveOptions[17]" @update:model-value="updateSaveOptions" label="HAS 경사로" />
+                  <q-checkbox v-model="CarSaveOptions[18]" @update:model-value="updateSaveOptions" label="TPMS 타이어공기압" />
+                  <q-checkbox v-model="CarSaveOptions[19]" @update:model-value="updateSaveOptions" label="유아시트고정장치" />
+                  <q-checkbox v-model="CarSaveOptions[20]" @update:model-value="updateSaveOptions" label="세이프티윈도우" />
+                  <q-checkbox v-model="CarSaveOptions[21]" @update:model-value="updateSaveOptions" label="액티브헤드레스트" />
+                  <q-checkbox v-model="CarSaveOptions[22]" @update:model-value="updateSaveOptions" label="전동식파워스티어링" />
+                  <q-checkbox v-model="CarSaveOptions[23]" @update:model-value="updateSaveOptions" label="AGCS 주행안정성 제어 시스템" />
+                </div>
+              </q-expansion-item>
+
+              <q-expansion-item v-model="isOptionsExpanded_conv" icon="directions_car" label="차량 편의 옵션" expand-separator>
+                <div class="q-gutter-md">
+                  <q-checkbox v-model="CarConOptions[0]" @update:model-value="updateConOptions" label="에어컨" />
+                  <q-checkbox v-model="CarConOptions[1]" @update:model-value="updateConOptions" label="풀오토 에어컨" />
+                  <q-checkbox v-model="CarConOptions[2]" @update:model-value="updateConOptions" label="듀얼 풀오토 에어컨" />
+                  <q-checkbox v-model="CarConOptions[3]" @update:model-value="updateConOptions" label="CD" />
+                  <q-checkbox v-model="CarConOptions[4]" @update:model-value="updateConOptions" label="CD 체인저" />
+                  <q-checkbox v-model="CarConOptions[5]" @update:model-value="updateConOptions" label="DVD" />
+                  <q-checkbox v-model="CarConOptions[6]" @update:model-value="updateConOptions" label="AUX단자" />
+                  <q-checkbox v-model="CarConOptions[7]" @update:model-value="updateConOptions" label="MP3" />
+                  <q-checkbox v-model="CarConOptions[8]" @update:model-value="updateConOptions" label="USB" />
+                  <q-checkbox v-model="CarConOptions[9]" @update:model-value="updateConOptions" label="iPod" />
+                  <q-checkbox v-model="CarConOptions[10]" @update:model-value="updateConOptions" label="네비게이션" />
+                  <q-checkbox v-model="CarConOptions[11]" @update:model-value="updateConOptions" label="스마트키" />
+                  <q-checkbox v-model="CarConOptions[12]" @update:model-value="updateConOptions" label="버튼시동" />
+                  <q-checkbox v-model="CarConOptions[13]" @update:model-value="updateConOptions" label="크루즈컨트롤" />
+                  <q-checkbox v-model="CarConOptions[14]" @update:model-value="updateConOptions" label="핸즈프리" />
+                  <q-checkbox v-model="CarConOptions[15]" @update:model-value="updateConOptions" label="전동식 파워 트렁크" />
+                  <q-checkbox v-model="CarConOptions[16]" @update:model-value="updateConOptions" label="자동주차시스템" />
+                  <q-checkbox v-model="CarConOptions[17]" @update:model-value="updateConOptions" label="레인센서와이퍼" />
+                  <q-checkbox v-model="CarConOptions[18]" @update:model-value="updateConOptions" label="속도 감응식 스티어링휠" />
+                  <q-checkbox v-model="CarConOptions[19]" @update:model-value="updateConOptions" label="스티어링휠 리모컨" />
+                  <q-checkbox v-model="CarConOptions[20]" @update:model-value="updateConOptions" label="트립컴퓨터" />
+                </div>
+              </q-expansion-item>
+              </q-card-section>
+
+              <!-- 차량 설명
+              <q-card-section>
+                <q-input
+                  v-model="car.description"
+                  label="차량 설명"
+                  type="textarea"
+                  rows="5"
+                  outlined
+                />
+              </q-card-section> -->
+
+              <!-- 제출 버튼 -->
+              <q-btn label="등록하기" type="submit" color="red-6" class="full-width" @click="submitProduct()" />
             </div>
-          </div>
-        </div>
-
-
-      <!-- 검색 영역 -->
-      <section class="page-section">
-        <div class="top-text">TRUST CAR에서 내차 찾기</div>
-
-        <div class="search-wrap">
-          <!-- Tab buttons -->
-          <div class="tab-buttons">
-            <span :class="{ active: selectedTab === '국산' }" @click="selectTab('국산')">국산</span>
-            <span :class="{ active: selectedTab === '수입' }" @click="selectTab('수입')">수입</span>
-          </div>
-
-          <!-- Search Form -->
-          <div class="search-form">
-            <!-- Manufacturer select -->
-            <select v-model="selectedManufacturer" @change="updateModels">
-              <option value="" disabled selected>제조사</option>
-              <option v-for="manufacturer in manufacturers" :key="manufacturer" :value="manufacturer">
-                {{ manufacturer }}
-              </option>
-            </select>
-
-            <!-- Model select -->
-            <select v-model="selectedModel" @change="updateSubModels" :disabled="!selectedManufacturer">
-              <option value="" disabled selected>모델</option>
-              <option v-for="model in models" :key="model" :value="model">{{ model }}</option>
-            </select>
-
-            <!-- Sub-model select -->
-            <select v-model="selectedSubModel" :disabled="!selectedModel">
-              <option value="" disabled selected>세부모델</option>
-              <option v-for="subModel in subModels" :key="subModel" :value="subModel">{{ subModel }}</option>
-            </select>
-
-            <button class="search-button" @click="searchCar()">검색</button>
-          </div>
-
-          <!-- Information box -->
-          <div class="info-box">
-            <span>전체</span>
-            <span class="total-count">169,901대</span>
-            <span>최근등록 (24시간)</span>
-            <span class="recent-count">4,805대</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 차량 추천 영역 -->
-       <section class="page-section">
-        <div class="reco-title">
-          <span>TRUST CAR의 자동차 리뷰, 이 차 어때?</span>
-        </div>
-
-        <div class="reco-car-box">
-          <div class="car-box">
-            <div class="car-img">
-            <img src="https://dzqerse1lankl.cloudfront.net/carsdata/cars/cm_cardb/file/d24ca08e-00c0-4166-9f5d-3077cd4c1573.png" alt="Car Image"  />
-            </div>
-            <div class="car-cont">
-              <ul class="cont-ul">
-                <li>
-                  <span class="car-name">테슬라 모델 Y</span>
-                </li>
-                <li>
-                  <span class="good-box">장점</span>
-                  <span>메이드 by 테슬라</span>
-                </li>
-                <li>
-                  <span class="bad-box">단점</span>
-                  <span>메이드 in 한,중,일(배터리)</span>
-                </li>
-                <li>
-                  <span class="car-total">총합</span>
-                  <span>★★★☆☆</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="car-box">
-            <div class="car-img">
-            <img src="https://dzqerse1lankl.cloudfront.net/carsdata/cars/cm_cardb/file/8983d3ec-bfb5-42d4-a60c-07c3fd28b46f.png" alt="Car Image" />
-            </div>
-            <div class="car-cont">
-              <ul class="cont-ul">
-                <li>
-                  <span class="car-name">테슬라 모델 3</span>
-                </li>
-                <li>
-                  <span class="good-box">장점</span>
-                  <span class="good-text">전기차 시대의 새로운 질서</span>
-                </li>
-                <li>
-                  <span class="bad-box">단점</span>
-                  <span>손님 맞을래요?</span>
-                </li>
-                <li>
-                  <span class="car-total">총합</span>
-                  <span>★★★★☆</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-
-       </section>
-
-       <!-- 광고영역 -->
-       <section class="page-section">
-        <div class="ad-box">
-          <div class="ad-box-det">
-            <img src="http://ci.encar.com/carsdata/index/ev_index_image.jpg" alt="vault 이미지" />
-          </div>
-          <div class="ad-box-det">
-            <img src="http://ci.encar.com/carsdata/index/22.jpg" alt="Ad Banner" />
-          </div>
-          <div class="ad-box-det">
-            <img src="https://ci.encar.com/carsdata/index/4.9.jpg" alt="Ad Banner" />
-          </div>
-        </div>
-
-
-       </section>
-
+          </q-card-section>
+        </q-card>
+      </div>
     </q-page>
   </q-layout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeMount } from "vue";
-import { api } from "boot/axios";
-import { useQuasar } from "quasar";
+import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useQuasar } from "quasar";
+import { api } from "boot/axios";
 
+// 기본 세팅
 const $router = useRouter();
-
-// 상태 관리를 위한 변수
-const selectedManufacturer = ref('');
-const models = ref([]);
-const selectedModel = ref('');
-const subModels = ref([]);
-const selectedSubModel = ref('');
-const selectedTab = ref('국산');
-const isLoggedIn = ref(false);
-const username = ref('');
-const password = ref('');
-const userId = ref('');
+const route = useRoute();
 const $q = useQuasar();
 
-// 제조사와 모델 데이터 (국산 & 수입)
-const koreanManufacturers = ['현대', '제네시스', '기아', '쉐보레', '르노코리아', '쌍용'];
-const importedManufacturers = ['BMW', '벤츠', '볼보', '아우디', '테슬라', '포르쉐','랜드로버','닛산','링컨','포드','폭스바겐','미니','캐딜락','토요타','렉서스','애스턴마틴','마세라티','푸조','지프','혼다','재규어','인피니티','폴스타'];
-// 모델 데이터를 정의
-const modelsByManufacturer = {
-  현대: [
-    "그랜저", "아반떼", "쏘나타", "싼타페", "스타렉스", "투싼", "펠리세이드", "제네시스",
-    "코나", "에쿠스", "스타리아", "캐스퍼", "아이오닉5", "엑센트", "i30", "벨로스터",
-    "맥스크루즈", "베뉴", "아이오닉", "i40", "베라크루즈", "넥쏘", "쏠라티", "아슬란", "아이오닉6"
-  ],
-  제네시스: ["G70", "G80", "G90", "GV70", "GV80", "GV90"],
-  기아: ["카니발","쏘렌토","K5","모닝","레이","K7","스포티지","K3","K8","모하비","셀토스","K9","니로","쏘울","스팅어","EV6","프라이드","포르테","스토닉","카렌스","오피러스","로체","EV9","EV3","엔터프라이즈"],
-  쉐보레: ["스파크","말리부","트랙스","크루즈","올란도","트레일블레이저","마티즈","알페온","볼트EV","아쿼녹스","다마스","임팔라","캡티바","콜로라도","아베오","라보","트래버스","라세티","카마로","볼트EUV","타호","토스카","볼트","윈스톰","티코"],
-  르노코리아:["QM6","SM6","SM5","SM3","XM3","SM7","QM3","QM5","마스터","조에","클리오","캡처","트위지","아르카나"],
-  쌍용:["티볼리","렉스턴","코란도","토레스","체어맨","엑티언","무쏘","카이런","로디우스","이스타나","뉴훼미리","칼리스타"],
-  BMW:["5시리즈","3시리즈","7시리즈","그란투리스모(GT)","X6","X5","4시리즈","X3","1시리즈","X7","X4","2시리즈","Z4","X1","M4","M3","M2","iX3","i4","6시리즈","M5","8시리즈","X4M","i3","X2","iX","i8","X3M","X6M","X5M","i7","M6","i5","XM","M8","Z3","1M","iX1","M쿠페/로드스터","Z8","기타"],
-  벤츠:["E클래스","S클래스","C클래스","GLC클래스","CLS클래스","GLE클래스","A클래스","CLA클래스","G클래스(G바겐)","GLA클래스","AMG GT","GLB클래스","EQS","EQE","GLS클래스","EQB","EQA","SL클래스","M클래스","SLK클래스","B클래스(MY B)","스프린터","GLK클래스","CLE클래스","SLC클래스","V클래스","CL클래스","EQC","CLK클래스","SEL/SEC","GL클래스","SLS AMG","R클래스","190클래스","기타","SLR"],
-  볼보:["XC60","XC90","S90","S60","XC40","V60","V40","V90","S80","C40","XC70","C30","S40","S70","940","V50","C70","EX30","V70","740","760","850","960","기타"],
-  아우디:["A6","A7","A4","A8","Q5","A5","Q7","Q8","A3","R8","e-트론","Q3","Q4 e-트론","S7","S8","TT","RS7","S4","S6","SQ5","RS5","Q2","S3","TTS","RSQ8","e-트론 GT","S5","RS e-트론 GT","A1","RS3","SQ8","SQ7","100","80","90","RS4","RS6","TTRS","V8","Q8 e-트론","SQ8 e-트론","올로드 콰트로","기타"],
-  테슬라:["모델 3","모델 Y","모델 X","모델 S"],
-  포르쉐:["카이엔","파나메라","718","911","마칸","타이칸","박스터","카이맨","928","944","968","카레라 GT","기타"],
-  랜드로버:["레인지로버","디스커버리","디스커버리 스포츠","레인지로버 스포츠","레인지로버 이보크","레인지로버 벨라","디펜더","프리랜더","기타"],
-  닛산:["리프","알티마","리프","370Z","큐브","맥시마","쥬크","무라노","패스파인더","엑스트레일","로그","스카이라인","캐시카이","350Z","GT-R","마치","휘가로","프론티어","NV","노트","로렐","모코","버사","베르사","블루버드 실피","블루버드","세드릭"],
-  링컨:["MKZ","에비에이터","MKS","컨티넨탈","네비게이터","MKX","노틸러스","MKC","코세어","타운카","LS","MKT"],
-  포드:["포커스","익스플로러","머스탱","F150","토러스","몬데오","레인저","쿠가","퓨전","브롱코","이스케이프","F350","E-Series","트랜짓","F250","익스플로러 스포츠트랙","프리스타일","GT","S-MAX","썬더버드","윈드스타","이코노라인","에코스포츠","컨투어","파이브 헌드레드","프로브","피에스타","기타","플렉스"],
-  폭스바겐:["티구안","골프","아테온","제타","파사트","CC","투아렉","비틀","폴로","시로코","티록","페이톤","ID.4","EOS","보라","기타","리알타","마이크로버스","벤토","사란","아틀라스","코라도","트랜스포터"],
-  미니:["쿠퍼","컨트리맨","클럽맨","쿠퍼 컨버터블","쿠페","페이스맨","로드스터","로버 미니"],
-  캐딜락:["에스컬레이드","CT6","CTS","ATS","XT5"],
-  토요타:["캠리","프리우스","RAV4","시에나","86","알파드","크라운","FJ 크루져"],
-  렉서스:["ES","NX","RX","LS","UX","CT200h","IS","GS","RC","RZ","LC","SC","GX","LX","기타"],
-  애스턴마틴:["DB11","밴티지","DBX","라피드","DBS","DB9","뱅퀴시","DB7","비라지"],
-  마세라티:["기블리","르반떼","콰트로포르테","그란투리스모","그레칼레","MC20","그란카브리오","쿠페","스파이더","그란스포츠","3200","MC12","기타"],
-  푸조:["3008","2008","508","5008","208","308","207","RCZ","206","408","307","407","익스퍼트","107","1007","205","306","405","406","605","607","806","807","기타"],
-  지프:["랭글러","체로키","레니게이드","글래디에이터","컴패스","커맨더","CJ","패트리어트"],
-  혼다:["어코드","파일럿","CR-V","오딧세이","시빅","레전드","HR-V","CR-Z","S660","N-BOX","S2000","스텝웨건","인사이트","크로스투어","Fit Aria","Fit","N-ONE","댓츠","델솔","라이프","리지라인","비트","스트림","엘리멘트","인스파이어","인테그라","크로스로드","패스포트","프렐류드","기타"],
-  재규어:["XF","XJ","XE","F-PACE","F-TYPE","E-PACE","I-PACE","X-TYPE","XJ-8","S-TYPE","XJ-6","XKR","다임러","XJR","소버린","XJ-C","XK8","기타","XJS","XK"],
-  인피니티:["Q50","G","Q30","M","QX60","Q70","QX50","FX","Q60","QX80","QX30","EX","JX","QX","QX70","I","Q","J30"],
-  폴스타:["폴스타2"]
+// 차량 정보 객체
+const car = ref({
+  model: '',
+  grade: '',
+  company: '',
+  price: '',
+  registration: '',
+  mileage: '',
+  fuelType: '',
+  transmission: '',
+  year: '',
+  color: '',
+  img:[],
+  o_in_options: [],
+  o_out_options: [],
+  o_con_options: [],
+  o_save_options: [],
+  out_options:["HID 램프", "LED 램프", "어댑티브 램프", "하이빔", "전동 접이 사이드미러", "열선 사이드미러", "후진 각도조절 사이드미러", "썬루프", "듀얼 썬루프", "파노라마 썬루프", "와이퍼 결빙방지 윈드실드", "자외선 차단 윈드실드", "알루미늄휠", "크롬휠", "광폭타이어"],
+  in_options:["가죽스티어링휠", "우드스티어링휠", "열선내장 스티어링 휠", "직물시트", "가죽시트", "전동시트(운전석)", "전동시트(동승석)", "전동시트(뒷좌석)", "열선시트(앞)", "열선시트(뒤)", "메모리시트(운전석)", "메모리시트(동승석)", "통풍시트(운전석)", "통풍시트(동승석)", "안마시트", "ECM 룸미러", "하이패스내장 룸미러", "후방룸미러", "풋파킹 브레이크", "전자식파킹 브레이크"],
+  save_options:["운전석에어백", "동승석에어백", "사이드에어백", "커튼에어백", "무릎보호에어백", "전방감지센서", "후방감지센서", "전방카메라", "후방카메라", "차선이탈방지(LDWS)", "어라운드뷰(AVM)", "후측방경보시스템(BSD/BSW)", "ABS 브레이크 잠김방지", "TCS 미끄럼방지", "VDC(ESP) 차체자세 제어", "ESS 급제동경보시스템", "HAS 경사로", "TPMS 타이어공기압", "유아시트고정장치", "세이프티윈도우", "액티브헤드레스트", "전동식파워스티어링", "AGCS 주행안정성 제어 시스템"],
+  con_options:["에어컨", "풀오토 에어컨", "듀얼 풀오토 에어컨", "CD", "CD 체인저", "DVD", "AUX단자", "MP3", "USB", "iPod", "네비게이션", "스마트키", "버튼시동", "크루즈컨트롤", "핸즈프리", "전동식 파워 트렁크", "자동주차시스템", "레인센서와이퍼", "속도 감응식 스티어링휠", "스티어링휠 리모컨", "트립컴퓨터"]
+});
+
+const formattedYear = ref('2024/01');
+
+const formatYear = (value) => {
+  // 숫자 이외의 문자 제거
+  let currentValue = value.replace(/[^\d]/g, '');
+
+  // 연도와 월을 추출 (YYYYMM 형식이므로 6글자까지 허용)
+  let year = currentValue.slice(0, 4);
+  let month = currentValue.slice(4, 6);
+
+  // 월의 범위가 1~12 사이인지 확인하고 조정
+  if (month.length === 1) {
+    month = '0' + month; // 월이 1자리일 경우 앞에 0을 붙임
+  } else if (month.length === 2 && (parseInt(month, 10) < 1 || parseInt(month, 10) > 12)) {
+    month = '01'; // 잘못된 월 입력 시 01로 고정
+  }
+
+  // 완성된 형식: YYYY/MM
+  formattedYear.value = year + (month ? '/' + month : '');
+
+  // car.year에 저장
+  car.value.year = formattedYear.value;
 };
 
+// 차량 외장 옵션
+const carOptions = ref(Array(15).fill(false)); // 15개의 옵션
+const updateOptions = () => {
+      car.value.o_out_options = [...carOptions.value]; // carOptions 배열을 복사하여 in_options에 저장
+    };
+// 차량 내장 옵션
+const CarInOptions = ref(Array(20).fill(false)); // 20개의 옵션
+const updateInOptions = () => {
+  car.value.o_in_options = [...CarInOptions.value]; // CarInOptions 배열을 복사하여 in_options에 저장
+};
+// 차량 안전 옵션
+const CarSaveOptions = ref(Array(24).fill(false)); // 10개의 옵션
+const updateSaveOptions = () => {
+  car.value.o_save_options = [...CarSaveOptions.value]; // CarSaveOptions 배열을 복사하여 in_options에 저장
+};
+// 차량 편의 옵션
+const CarConOptions = ref(Array(21).fill(false)); // 10개의 옵션
+const updateConOptions = () => {
+  car.value.o_con_options = [...CarConOptions.value]; // CarConOptions 배열을 복사하여 in_options에 저장
+};
 
-const subModelsByModel = {
-  그랜저: [
+// 선택된 제조사 추적
+const selectedManufacturer = ref('');
+const isOptionsExpanded = ref(false); // 옵션 섹션 열림/닫힘 상태 관리
+const isOptionsExpanded_in = ref(false); // 옵션 섹션 열림/닫힘 상태 관리
+const isOptionsExpanded_save = ref(false); // 옵션 섹션 열림/닫힘 상태 관리
+const isOptionsExpanded_conv = ref(false); // 옵션 섹션 열림/닫힘 상태 관리
+
+// 연료 옵션 리스트
+const fuelOptions = ref([
+  '가솔린', '디젤', 'LPG', '하이브리드', '전기'
+]);
+
+const ManufactuerOptions = ref([
+  '국산', '수입'
+]);
+
+const CompanyOptions = ref([]);
+const ModelOptions = ref([]);
+const GradeOptions = ref([]);
+
+const carData = {
+  현대: {
+    models: ["그랜저", "아반떼", "쏘나타", "싼타페", "스타렉스", "투싼", "펠리세이드", "제네시스",
+    "코나", "에쿠스", "스타리아", "캐스퍼", "아이오닉5", "엑센트", "i30", "벨로스터",
+    "맥스크루즈", "베뉴", "아이오닉", "i40", "베라크루즈", "넥쏘", "쏠라티", "아슬란", "아이오닉6"],
+    grades: {
+      그랜저: [
     "그랜저 (GN7) (22년~현재)",
     "그랜저 하이브리드 (GN7) (22년~현재)",
     "더 뉴 그랜저 IG (19년~22년)",
@@ -410,41 +539,13 @@ const subModelsByModel = {
   ],
   아이오닉6:[
     "아이오닉6(22년~현재)"
-  ],
-  G80: [
-    "일렉트리파이드 G80 (RG3) (21년~현재)",
-    "G80 (RG3) (20년~현재)",
-    "G80 (16년~20년)"
-  ],
-
-  GV70: [
-    "일렉트리파이드 GV70 (22년~현재)",
-    "GV70 (21년~현재)"
-  ],
-
-  G70: [
-    "더 뉴 G70 슈팅브레이크 (22년~현재)",
-    "더 뉴 G70 (20년~현재)",
-    "G70 (17년~20년)"
-  ],
-
-  G90: [
-    "G90 (RS4) (21년~현재)",
-    "G90 (18년~21년)"
-  ],
-
-  GV60: [
-    "GV60 (21년~현재)"
-  ],
-
-  GV80: [
-    "GV80 쿠페 (23년~현재)",
-    "GV80 (20년~현재)"
-  ],
-  EQ900:[
-    "EQ900(15년~18년)"
-  ],
-  카니발: [
+  ]
+    }
+  },
+  기아: {
+    models: ["카니발","쏘렌토","K5","모닝","레이","K7","스포티지","K3","K8","모하비","셀토스","K9","니로","쏘울","스팅어","EV6","프라이드","포르테","스토닉","카렌스","오피러스","로체","EV9","EV3","엔터프라이즈"],
+    grades: {
+      카니발: [
     "더 뉴 카니발 4세대 (23년~현재)",
     "카니발 4세대 (20년~23년)",
     "더 뉴 카니발 (18년~20년)",
@@ -629,8 +730,51 @@ const subModelsByModel = {
 
   엔터프라이즈: [
     "엔터프라이즈 (97년~02년)"
+  ]
+    }
+  },
+  제네시스: {
+    models: ["G70", "G80", "G90", "GV70", "GV80", "GV90"],
+    grades: {
+      G80: [
+    "일렉트리파이드 G80 (RG3) (21년~현재)",
+    "G80 (RG3) (20년~현재)",
+    "G80 (16년~20년)"
   ],
-  스파크: [
+
+  GV70: [
+    "일렉트리파이드 GV70 (22년~현재)",
+    "GV70 (21년~현재)"
+  ],
+
+  G70: [
+    "더 뉴 G70 슈팅브레이크 (22년~현재)",
+    "더 뉴 G70 (20년~현재)",
+    "G70 (17년~20년)"
+  ],
+
+  G90: [
+    "G90 (RS4) (21년~현재)",
+    "G90 (18년~21년)"
+  ],
+
+  GV60: [
+    "GV60 (21년~현재)"
+  ],
+
+  GV80: [
+    "GV80 쿠페 (23년~현재)",
+    "GV80 (20년~현재)"
+  ],
+  EQ900:[
+    "EQ900(15년~18년)"
+  ]
+    }
+  },
+  '쉐보레(GM대우)': {
+    models: ["스파크","말리부","트랙스","크루즈","올란도","트레일블레이저","마티즈","알페온","볼트EV","아쿼녹스","다마스","임팔라","캡티바","콜로라도","아베오","라보","트래버스","라세티","카마로","볼트EUV","타호","토스카","볼트","윈스톰","티코"],
+    grades: {
+      스파크: [
     "더 뉴 스파크 (18년~23년)",
     "더 넥스트 스파크 (15년~18년)",
     "스파크 EV (13년~16년)",
@@ -735,8 +879,13 @@ const subModelsByModel = {
   ],
   티코: [
     "티코 (91년~01년)"
-  ],
-  QM6: [
+  ]
+    }
+  },
+  '르노코리아(삼성)': {
+    models: ["QM6","SM6","SM5","SM3","XM3","SM7","QM3","QM5","마스터","조에","클리오","캡처","트위지","아르카나"],
+    grades: {
+      QM6: [
     "더 뉴 QM6 (19년~현재)",
     "QM6 (16년~19년)"
   ],
@@ -794,8 +943,13 @@ const subModelsByModel = {
   ],
   아르카나: [
     "아르카나 (24년~현재)"
-  ],
-  티볼리: [
+  ]
+    }
+  },
+  'KG모빌리티(쌍용)': {
+    models: ["티볼리","렉스턴","코란도","토레스","체어맨","엑티언","무쏘","카이런","로디우스","이스타나","뉴훼미리","칼리스타"],
+    grades: {
+      티볼리: [
     "더 뉴 티볼리 (23년~현재)",
     "더 뉴 티볼리 에어 (23년~현재)",
     "베리 뉴 티볼리 (19년~23년)",
@@ -870,8 +1024,13 @@ const subModelsByModel = {
   ],
   칼리스타: [
     "칼리스타 (92년~94년)"
-  ],
-  "5시리즈":[
+  ]
+    }
+  },
+  BMW: {
+    models: ["5시리즈","3시리즈","7시리즈","그란투리스모(GT)","X6","X5","4시리즈","X3","1시리즈","X7","X4","2시리즈","Z4","X1","M4","M3","M2","iX3","i4","6시리즈","M5","8시리즈","X4M","i3","X2","iX","i8","X3M","X6M","X5M","i7","M6","i5","XM","M8","Z3","1M","iX1","M쿠페/로드스터","Z8"],
+    grades: {
+      "5시리즈":[
     "5시리즈 (G60) (23년~현재)",
     "5시리즈 (G30) (17년~23년)",
     "5시리즈 (F10) (10년~16년)",
@@ -1042,8 +1201,13 @@ const subModelsByModel = {
   ],
   Z8: [
     "Z8 (99년~03년)"
-  ],
-  E클래스: [
+  ]
+    }
+  },
+  벤츠: {
+    models: ["E클래스","S클래스","C클래스","GLC클래스","CLS클래스","GLE클래스","A클래스","CLA클래스","G클래스(G바겐)","GLA클래스","AMG GT","GLB클래스","EQS","EQE","GLS클래스","EQB","EQA","SL클래스","M클래스","SLK클래스","B클래스(MY B)","스프린터","GLK클래스","CLE클래스","SLC클래스","V클래스","CL클래스","EQC","CLK클래스","SEL/SEC","GL클래스","SLS AMG","R클래스","190클래스","SLR"],
+    grades: {
+      E클래스: [
     "E-클래스 W214 (24년~현재)",
     "E-클래스 W213 (16년~현재)",
     "E-클래스 W212 (09년~17년)",
@@ -1179,8 +1343,13 @@ const subModelsByModel = {
   ],
   "190클래스": [
     "190-클래스 (82년~94년)"
-  ],
-  XC60: [
+  ]
+    }
+  },
+  볼보: {
+    models: ["XC60","XC90","S90","S60","XC40","V60","V40","V90","S80","C40","XC70","C30","S40","S70","940","V50","C70","EX30","V70","740","760","850","960"],
+    grades: {
+      XC60: [
     "XC60 2세대 (17년~현재)",
     "XC60 (09년~17년)"
   ],
@@ -1256,8 +1425,13 @@ const subModelsByModel = {
   ],
   960: [
     "960 (90년~98년)"
-  ],
-  A6: [
+  ]
+    }
+  },
+  아우디: {
+    models: ["A6","A7","A4","A8","Q5","A5","Q7","Q8","A3","R8","e-트론","Q3","Q4 e-트론","S7","S8","TT","RS7","S4","S6","SQ5","RS5","Q2","S3","TTS","RSQ8","e-트론 GT","S5","RS e-트론 GT","A1","RS3","SQ8","SQ7","100","80","90","RS4","RS6","TTRS","V8","Q8 e-트론","SQ8 e-트론","올로드 콰트로"],
+    grades: {
+      A6: [
     "A6 (C8) (19년~현재)",
     "뉴 A6 (04년~18년)",
     "A6 (94년~04년)"
@@ -1412,8 +1586,13 @@ const subModelsByModel = {
   ],
   "올로드 콰트로": [
     "올로드 콰트로 (99년~현재)"
-  ],
-  "모델 3": [
+  ]
+    }
+  },
+  테슬라: {
+    models: ["모델 3","모델 Y","모델 X","모델 S"],
+    grades: {
+      "모델 3": [
     "모델 3 (17년~현재)"
   ],
   "모델 Y": [
@@ -1424,8 +1603,13 @@ const subModelsByModel = {
   ],
   "모델 S": [
     "모델 S (12년~현재)"
-  ],
-  카이엔: [
+  ]
+    }
+  },
+  포르쉐: {
+    models: ["카이엔","파나메라","718","911","마칸","타이칸","박스터","카이맨","928","944","968","카레라 GT"],
+    grades: {
+      카이엔: [
     "카이엔 (PO536) (19년~현재)",
     "뉴 카이엔 (10년~18년)",
     "카이엔 (02년~10년)"
@@ -1466,8 +1650,13 @@ const subModelsByModel = {
   ],
   "카레라 GT": [
     "카레라 GT (04년~06년)"
-  ],
-  레인지로버: [
+  ]
+    }
+  },
+  랜드로버: {
+    models: ["레인지로버","디스커버리","디스커버리 스포츠","레인지로버 스포츠","레인지로버 이보크","레인지로버 벨라","디펜더","프리랜더"],
+    grades: {
+      레인지로버: [
     "레인지로버 5세대 (22년~현재)",
     "레인지로버 4세대 (13년~22년)",
     "레인지로버 (70년~12년)"
@@ -1502,8 +1691,13 @@ const subModelsByModel = {
   프리랜더: [
     "프리랜더2 (06년~14년)",
     "프리랜더 (97년~06년)"
-  ],
-  리프: [
+  ]
+    }
+  },
+  닛산: {
+    models: ["리프","알티마","리프","370Z","큐브","맥시마","쥬크","무라노","패스파인더","엑스트레일","로그","스카이라인","캐시카이","350Z","GT-R","마치","휘가로","프론티어","NV","노트","로렐","모코","버사","베르사","블루버드 실피","블루버드","세드릭"],
+    grades: {
+      리프: [
     "리프 (ZE1) (19년~현재)",
     "리프 (10년~18년)"
   ],
@@ -1586,8 +1780,13 @@ const subModelsByModel = {
   ],
   세드릭: [
     "세드릭 (60년~04년)"
-  ],
-  MKZ: [
+  ]
+    }
+  },
+  링컨: {
+    models: ["MKZ","에비에이터","MKS","컨티넨탈","네비게이터","MKX","노틸러스","MKC","코세어","타운카","LS","MKT"],
+    grades: {
+      MKZ: [
     "뉴 MKZ (10년~현재)",
     "MKZ (05년~09년)"
   ],
@@ -1629,8 +1828,13 @@ const subModelsByModel = {
   ],
   MKT: [
     "MKT (09년~현재)"
-  ],
-  포커스: [
+  ]
+    }
+  },
+  포드: {
+    models: ["포커스","익스플로러","머스탱","F150"],
+    grades: {
+      포커스: [
     "포커스 (98년~현재)"
   ],
   익스플로러: [
@@ -1643,8 +1847,13 @@ const subModelsByModel = {
   ],
   F150: [
     "F150 (73년~현재)"
-  ],
-  티구안: [
+  ]
+    }
+  },
+  폭스바겐: {
+    models: ["티구안","골프","아테온","제타","파사트","CC","투아렉","비틀","폴로","시로코","티록","페이톤","ID.4","EOS","보라","기타","리알타","마이크로버스","벤토","사란","아틀라스","코라도","트랜스포터"],
+    grades: {
+      티구안: [
     "티구안 올스페이스 (18년~현재)",
     "티구안 2세대 (18년~현재)",
     "뉴 티구안 (11년~16년)",
@@ -1703,8 +1912,13 @@ const subModelsByModel = {
   ],
   "ID.4": [
     "ID.4 (22년~현재)"
-  ],
-  쿠퍼: [
+  ]
+    }
+  },
+  미니: {
+    models: ["쿠퍼","컨트리맨","클럽맨","쿠퍼 컨버터블","쿠페","페이스맨","로드스터","로버 미니"],
+    grades: {
+      쿠퍼: [
     "쿠퍼 일렉트릭 (22년~현재)",
     "쿠퍼 SD (12년~현재)",
     "쿠퍼 D (07년~현재)",
@@ -1742,8 +1956,13 @@ const subModelsByModel = {
   ],
   "로버 미니": [
     "로버 미니 (76년~01년)"
-  ],
-  에스컬레이드: [
+  ]
+    }
+  },
+  캐딜락: {
+    models: ["에스컬레이드","CT6","CTS","ATS","XT5"],
+    grades: {
+      에스컬레이드: [
     "에스컬레이드 5세대 (21년~현재)",
     "에스컬레이드 (99년~20년)"
   ],
@@ -1760,8 +1979,13 @@ const subModelsByModel = {
   ],
   XT5: [
     "XT5 (16년~현재)"
-  ],
-  캠리: [
+  ]
+    }
+  },
+  토요타: {
+    models: ["캠리","프리우스","RAV4","시에나","86","알파드","크라운","FJ 크루져"],
+    grades: {
+      캠리: [
     "캠리 (XV70) (17년~현재)",
     "뉴 캠리 (12년~17년)",
     "캠리 (86년~11년)"
@@ -1797,8 +2021,13 @@ const subModelsByModel = {
   ],
   "FJ 크루져": [
     "FJ 크루져 (06년~14년)"
-  ],
-  ES: [
+  ]
+    }
+  },
+  렉서스: {
+    models:["ES","NX","RX","LS","UX","CT200h","IS","GS","RC","RZ","LC","SC","GX","LX"],
+    grades: {
+      ES: [
     "ES300h 7세대 (18년~현재)",
     "뉴 ES350 (12년~18년)",
     "뉴 ES300h (12년~18년)",
@@ -1888,11 +2117,21 @@ const subModelsByModel = {
   ],
   LX: [
     "LX (96년~현재)"
-  ],
-  라피드:[
+  ]
+    }
+  },
+  애스턴마틴: {
+    models: ["라피드"],
+    grades: {
+      라피드:[
     "라피드 (10년~현재)"
-  ],
-  기블리: [
+  ]
+    }
+  },
+  마세라티: {
+    models: ["기블리","르반떼","콰트로포르테","그란투리스모"],
+    grades: {
+      기블리: [
     "기블리 (13년~현재)"
   ],
   르반떼: [
@@ -1903,8 +2142,13 @@ const subModelsByModel = {
   ],
   그란투리스모: [
     "그란투리스모 (07년~현재)"
-  ],
-  3008: [
+  ]
+    }
+  },
+  푸조: {
+    models: ["3008","2008","508","5008"],
+    grades: {
+      3008: [
     "3008 2세대 (17년~현재)",
     "3008 (09년~16년)"
   ],
@@ -1923,8 +2167,13 @@ const subModelsByModel = {
   5008: [
     "5008 2세대 (17년~현재)",
     "5008 1세대 (09년~16년)"
-  ],
-  랭글러: [
+  ]
+    }
+  },
+  지프: {
+    models: ["랭글러","체로키","레니게이드","글래디에이터","컴패스","커맨더","CJ","패트리어트"],
+    grades: {
+      랭글러: [
     "랭글러 (JL) (18년~현재)",
     "랭글러 (JK) (07년~18년)",
     "랭글러 (TJ) (96년~06년)",
@@ -1948,14 +2197,24 @@ const subModelsByModel = {
   ],
   커맨더: [
     "커맨더 (06년~10년)"
-  ],
-  어코드: [
+  ]
+    }
+  },
+  혼다: {
+    models: ["어코드"],
+    grades: {
+      어코드: [
     "어코드 11세대 (23년~현재)",
     "어코드 10세대 (18년~23년)",
     "올뉴어코드 (08년~17년)",
     "어코드 (76년~07년)"
-  ],
-  XF: [
+  ]
+    }
+  },
+  재규어: {
+    models: ["XF","XJ","XE","F-PACE","F-TYPE","E-PACE"],
+    grades: {
+      XF: [
     "XF (X260) (16년~현재)",
     "New XF (11년~15년)",
     "XF (08년~11년)"
@@ -1975,430 +2234,219 @@ const subModelsByModel = {
   ],
   "E-PACE": [
     "E-PACE (18년~현재)"
-  ],
-  Q50: [
+  ]
+    }
+  },
+  인피니티: {
+    models: ["Q50","QX60"],
+    grades: {
+      Q50: [
     "Q50 (14년~현재)"
   ],
   QX60: [
     "QX60 (14년~현재)"
   ]
+    }
+  }
 };
 
-// 국산/수입 선택 시 제조사와 모델을 업데이트
-const manufacturers = ref(koreanManufacturers); // 초기 국산 제조사 설정
-
-// 탭 선택 함수
-const selectTab = (tab) => {
-  selectedTab.value = tab;
-  if (tab === '국산') {
-    manufacturers.value = koreanManufacturers;
+// 제조사 선택 시 호출되는 함수
+const onCompanyChange = (company) => {
+  car.value.model = '';  // 모델 초기화
+  car.value.grade = '';  // 세부 모델 초기화
+  if (carData[company]) {
+    ModelOptions.value = carData[company].models;
   } else {
-    manufacturers.value = importedManufacturers;
-  }
-  // 선택 초기화
-  selectedManufacturer.value = '';
-  models.value = [];
-  selectedModel.value = '';
-  subModels.value = [];
-  selectedSubModel.value = '';
-};
-
-// 제조사가 변경될 때 모델 업데이트 함수
-const updateModels = () => {
-  models.value = modelsByManufacturer[selectedManufacturer.value] || [];
-  selectedModel.value = '';  // 모델 초기화
-  subModels.value = [];  // 세부모델 초기화
-};
-
-// 모델이 변경될 때 세부모델을 업데이트하는 함수
-const updateSubModels = () => {
-  subModels.value = subModelsByModel[selectedModel.value] || [];
-  selectedSubModel.value = '';  // 세부모델 초기화
-
-};
-
-const searchCar = () => {
-  console.log('검색:', selectedManufacturer.value, selectedModel.value, selectedSubModel.value);
-
-  const path = selectedTab.value === '국산'
-    ? '/product/ProductList'
-    : '/product/ProductImportedList';
-
-  $router.push({
-    path: path,
-    query: {
-      manufacturer: selectedManufacturer.value,
-      model: selectedModel.value,
-      subModel: selectedSubModel.value,
-    },
-  });
-};
-
-const LoginAction = async () => {
-  await Login();
-  GetUserInterestProduct();
-  }
-
-
-const Login = async () => {
-  const url = `${process.env.API}login`;
-  try {
-    const response = await api.post(url, {
-      email: username.value,
-      password: password.value,
-    }, {
-      withCredentials: true, // 쿠키를 포함하여 요청할 수 있도록 설정
-    });
-
-    if (response.status === 200) {
-      console.log(response.data); // 응답 데이터 구조 확인
-      isLoggedIn.value = true;
-      username.value = response.data.username; // 서버에서 가져온 사용자 이름
-      userId.value = response.data.user_id; // 서버에서 가져온 사용자 ID
-    }
-
-  } catch (err) {
-    if (err.response) { // 서버에서 반환된 응답이 있을 경우
-      const status = err.response.status;
-
-      if (status === 401) {
-        $q.notify({
-          color: "negative",
-          position: "center",
-          message: "올바르지 않은 비밀번호입니다.",
-        });
-      } else if (status === 422) {
-        $q.notify({
-          color: "negative",
-          position: "center",
-          message: "올바르지 않은 아이디입니다.",
-        });
-      } else {
-        console.error('로그인 오류:', err.response.data || err.message);
-      }
-    } else {
-      console.error('로그인 오류:', err.message);
-    }
+    ModelOptions.value = [];
   }
 };
 
-const checkLoginStatus = async () => {
-  try {
-    const response = await api.get(`${process.env.API}check-session`, {
-      withCredentials: true // 쿠키를 포함하여 요청할 수 있도록 설정
-    });
-    if (response.status === 200) {
-      isLoggedIn.value = true;
-      username.value = response.data.username; // 서버에서 사용자 이름을 가져오는 부분
-      userId.value = response.data.user_id; // 서버에서 사용자 ID를 가져오는 부분
-    }
-  } catch (error) {
-    console.log('로그인 상태가 아닙니다.');
-    isLoggedIn.value = false;
-    username.value = '';
-    userId.value = '';
+// 모델 선택 시 호출되는 함수
+const onModelChange = (model) => {
+  car.value.grade = '';  // 세부 모델 초기화
+  if (carData[car.value.company]?.grades[model]) {
+    GradeOptions.value = carData[car.value.company].grades[model];
+  } else {
+    GradeOptions.value = [];
+  }
+};
+
+const activeButton = ref(null)
+
+// 제조사 선택 버튼 핸들러
+const selectManufacturer = (manufacturer, idx) => {
+  car.value.manufacturer = manufacturer;
+  activeButton.value = idx
+  updateCompanyOptions(manufacturer);
+};
+
+const updateCompanyOptions = (manufacturer) => {
+  if (manufacturer === '국산') {
+    CompanyOptions.value = ['현대', '기아', '제네시스' , '쉐보레(GM대우)', '르노코리아(삼성)', 'KG모빌리티(쌍용)'];
+  } else if (manufacturer === '수입') {
+    CompanyOptions.value = ['BMW', '벤츠', '볼보','아우디','테슬라','포르쉐','랜드로버','닛산','링컨','포드','폭스바겐','미니','캐딜락','토요타','렉서스','애스턴마틴','마세라티','푸조','지프','혼다','재규어','인피니티','폴스타' ];
   }
 }
 
-onBeforeMount(() => {
-  checkLoginStatus();
-  GetUserInterestProduct();
-});
+// 변속기 옵션 리스트
+const transmissionOptions = ref([
+  '자동', '수동', '반자동'
+]);
 
-const InterestProductCount = ref(0);
+// 이미지 미리보기 배열
+const imagePreviews = ref([]);
 
-// 관심상품 목록 API 호출
-const GetUserInterestProduct = () => {
-  const url = `${process.env.API}user/interest_products`;
+// 이미지 추가 핸들러
+const onFilesAdded = (files) => {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageObject = {
+        id: Date.now() + Math.random(), // 고유 ID 생성
+        url: e.target.result,
+        file
+      };
 
-  api.get(url, {
-    withCredentials: true  // 쿠키를 포함하여 요청
-  })
-    .then((res) => {
-      console.log("관심상품 목록 확인", res.data);
-      InterestProductCount.value = res.data.length;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      // 미리보기 배열에 추가
+      imagePreviews.value.push(imageObject);
+
+      // car.value.img 배열에 파일 추가
+      car.value.img.push(imageObject.file);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+// 이미지 제거 핸들러
+const onFileRemoved = (file) => {
+  // 미리보기 배열에서 제거
+  imagePreviews.value = imagePreviews.value.filter(image => image.file !== file);
+
+  // car.value.img 배열에서도 제거
+  car.value.img = car.value.img.filter(imgFile => imgFile !== file);
+};
+
+// 모든 이미지 제거 핸들러
+const onAllFilesRemoved = () => {
+  // 미리보기 배열 초기화
+  imagePreviews.value = [];
+
+  // car.value.img 배열 초기화
+  car.value.img = [];
 };
 
 
-const Logout = async () => {
-    try {
-      const response = await api.post(`${process.env.API}logout`, {}, { withCredentials: true });
-      console.log(response.data.message);  // "로그아웃 성공"
+const insert_product = async (product) => {
 
-      // 로그인 상태 해제
-      isLoggedIn.value = false;
-      username.value = '';
-      userId.value = '';
+    console.log("상품 추가 요청:", product);
+  try {
+    const response = await fetch(`${process.env.API}products_insert`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(product), // product 객체를 JSON으로 변환해 직접 보냄
+    });
 
-      // 페이지 리디렉션 등
-      // router.push('/login');
-    } catch (error) {
-      console.error('로그아웃 실패:', error);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  };
+
+    const result = await response.json();
+    console.log("상품이 성공적으로 추가되었습니다:", result);
+    return result;
+  } catch (error) {
+    console.error("상품 추가 중 오류 발생:", error);
+    throw error;
+  }
+};
+
+const submitProduct = async () => {
+  const formData = new FormData();
+
+  // car 객체의 데이터를 FormData에 추가
+  for (let key in car.value) {
+    if (Array.isArray(car.value[key])) {
+      car.value[key].forEach(item => formData.append(key, item));
+    } else {
+      formData.append(key, car.value[key]);
+    }
+  }
+
+  // 이미지 파일을 FormData에 추가
+  imagePreviews.value.forEach(image => {
+    formData.append('image_files', image.file);
+  });
+
+  console.log("상품 추가 요청:", formData);
+
+  // API 요청
+  try {
+    const response = await fetch(`${process.env.API}products_insert`, {
+      method: "POST",
+      body: formData  // FormData를 전송
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("상품이 성공적으로 추가되었습니다:", result);
+    return result;
+  } catch (error) {
+    console.error("상품 추가 중 오류 발생:", error);
+    throw error;
+  }
+};
+
+
+
 
 
 </script>
 
-
-<style>
-/* 광고와 로그인 영역 컨테이너 */
-.ad-login-container {
+<style scoped>
+.main-container {
   display: flex;
-  align-items: center;
-  gap: 15px;
-  /* border-bottom: 1px solid #ccc; */
-  margin-bottom: 20px;
-  width: 100%;
-  margin-top: 15px;
-  background-color: #ffffff;
-    padding: 24px;
-    margin: 10px 0;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
-/* 광고 섹션 */
-.ad-section img {
-  height: 100%;
+.vehicle-listing-page {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.full-width {
   width: 100%;
 }
 
-/* 로그인 섹션 */
-.login-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 23%;
-}
-
-.ad-section{
-  height: 146px;
-  width: 74%;
-}
-
-.login-text {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.login-input {
-  padding: 10px;
-  border: 1px solid #ccc;
+.q-pa-md {
   width: 100%;
 }
 
-.login-button {
-  padding: 10px;
-  background-color: red;
-  color: white;
-  border: none;
-  cursor: pointer;
+.q-uploader.column.no-wrap {
   width: 100%;
 }
-
-/* 기존 스타일링 */
-.top-text {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.search-wrap {
-  padding: 20px;
-  border: 1px solid #ccc;
-}
-
-.tab-buttons {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-}
-
-.tab-buttons span {
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #333;
-}
-
-.tab-buttons .active {
-  color: red;
-}
-
-.search-form {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.search-form select,
-.search-form input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  width: 150px;
-}
-
-.search-button {
-  padding: 10px 20px;
-  background-color: red;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.info-box {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.info-box span {
-  font-weight: bold;
-}
-
-.total-count,
-.recent-count {
-  color: red;
-}
-.reco-car-box{
+.btn-line{
+  width: 100%;
   display: flex;
   justify-content: space-between;
 }
-.reco-title{
-  font-weight: bold;
-  padding-bottom: 30px;
+.category-btn {
+  width: 48%; /* 버튼이 나란히 배치되도록 조정 */
+  font-size: 14px;
 }
-.reco-title span {
-  font-size: 16px;
-}
-.car-box{
-  display: flex
-}
-.car-img{
-  max-height: 150px;
-}
-.car-img img{
- height: 100%;
- width: 100%;
-}
-.good-box{
+
+.selected-btn {
   background-color: red;
-  border-radius: 5px;
-  padding: 5px;
-  font-weight: bold;
-  color: white;
-  margin-right: 10px
-}
-.bad-box{
-  background-color: black;
-  border-radius: 5px;
-  padding: 5px;
-  font-weight: bold;
-  color: white;
-  margin-right: 10px
-}
-.cont-ul{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.car-name{
-  font-weight: bold;
-  font-size: 16px;
-}
-.car-total{
-  font-weight: bold;
-  margin-right: 10px;
-}
-.good-text{
-  word-break: keep-all;
-}
-.ad-box{
-  display: flex;
-  height: 100%;
-  gap: 40px;
-  justify-content: center;
-}
-.ad-box-det img {
-  width: 100%;
-}
-.ad-box-det {
-  border-right: 3px solid #ccc; /* 구분선 추가 */
-}
-
-.ad-box-det:last-child {
-  border-right: none; /* 마지막 요소에는 구분선 제거 */
-}
-.user-main {
-  display: flex;
-  align-items: center; /* Align items vertically center */
-  gap: 30px;
-  padding-top: 10px;
-}
-.user-name{
-  font-weight: 800;
-}
-
-.user-right {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center; /* Add this to vertically align items */
-}
-
-.user-right div {
-  display: flex;  /* Make sure the divs are flex containers */
-  align-items: center;  /* Vertically center content */
-  height: 100%;  /* Ensure divs fill the available height */
-}
-
-.logout-btn {
-  cursor: pointer;
-  border: 1px solid #b4b0b0;
-  border-radius: 5px;
-  padding: 5px 10px; /* Adjust padding to match button size */
-  display: flex;
-  align-items: center; /* Vertically align text */
-  justify-content: center; /* Horizontally center text */
-  height: 40px; /* Set a specific height if needed */
-}
-.user-info-section{
-  border: 1px solid #ccc;
-  padding: 5px;
-  height: 146px;
-  background-color: #ffff;
-}
-.user-stat{
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-.right-scor{
-  padding-left: 20px;
-  text-align: right;
-}
-.car-int{
   color: red;
-  font-weight: bold;
 }
-.font-bold{
-  font-weight: bold;
+.category-btn.active {
+  background-color: red;
+  color: #000;
 }
-.stat-div {
-  cursor: pointer;
-    transition: color 0.3s;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.stat-div:hover {
-  color: red; /* Change text color to green on hover */
+.q-btn__content {
+    font-size: 17px;
+    font-weight: bold;
 }
 </style>

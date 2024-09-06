@@ -13,7 +13,7 @@
             <div class="menu-title" @click="goMenu('수입')">수입</div>
           </li>
           <li class="menu-item">
-            <div class="menu-title">내차팔기</div>
+            <div class="menu-title" @click="goMenu('판매')">내차팔기</div>
           </li>
           <li class="menu-item">
             <div class="menu-title">시세</div>
@@ -340,29 +340,9 @@ const goMenu = (menu) => {
     $router.push({
       path: `/product/ProductImportedList`,
     });
-  } else if (menu == "교통") {
+  } else if (menu == "판매") {
     $router.push({
-      path: `/savings/SavingsAccount/대중교통`,
-    });
-  } else if (menu == "통신") {
-    $router.push({
-      path: `/savings/SavingsAccount/통신`,
-    });
-  } else if (menu == "주유") {
-    $router.push({
-      path: `/savings/SavingsAccount/주유`,
-    });
-  } else if (menu == "예금") {
-    $router.push({
-      path: `/instalment/InstalmentList`,
-    });
-  } else if (menu == "적금추천") {
-    $router.push({
-      path: `/deposit/DepositRecommand`,
-    });
-  } else if (menu == "카드추천") {
-    $router.push({
-      path: `/savings/CardRecommand`,
+      path: `/trade/TradeWrite`,
     });
   }
 };

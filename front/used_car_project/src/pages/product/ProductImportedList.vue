@@ -250,7 +250,7 @@
               :max="maxPages"
               boundary-links
               max-pages="5"
-              color="deep-orange"
+              color="red-6"
               @update:model-value="changePage"
               class="custom-pagination"
             />
@@ -1561,9 +1561,7 @@ const toggleRecentSearch = () => {
       const apiManufacturer = manufacturerMapping[manufacturer] || manufacturer; // API에 전달할 제조사 이름 결정
       search.value.manufacturers = apiManufacturer; // API 호출을 위해 선택된 제조사 저장
       GetProductList(); // API 호출
-      if (selectedModel.value) {
-        addrecentSearchImportedCondition();
-      }
+
     }
   };
 
@@ -1578,6 +1576,9 @@ const toggleModel = (model) => {
     search.value.name = model; // API 호출을 위해 선택된 모델 저장
     openDetailModel.value = null; // 세부 모델 목록 초기화
   }
+  if (selectedModel.value) {
+        addrecentSearchImportedCondition();
+      }
   GetProductList(); // API 호출
 };
 
@@ -2058,6 +2059,7 @@ onMounted(() => {
   background-color: #fafafa;
   margin-top: 10px;
   border-radius: 10px;
+  padding-left: 10px;
 }
 
 .selected-manufacturer {
@@ -2223,8 +2225,29 @@ onMounted(() => {
 }
 
 .custom-checkbox {
-  margin-left: 8px; /* 체크박스와 라벨 사이의 간격 조정 */
+  appearance: none; /* 브라우저 기본 스타일 제거 */
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc; /* 외곽선 색상을 옅은 회색으로 설정 */
+  border-radius: 3px;
+  vertical-align: middle; /* 체크박스를 텍스트 높이에 맞춤 */
+  background-color: #f5f5f5; /* 체크박스 배경 색상 */
 }
+.custom-checkbox:checked {
+  background-color: #ccc; /* 체크된 상태의 배경 색상 */
+  border-color: #888; /* 체크된 상태의 외곽선 색상 */
+}
+
+.custom-checkbox:checked::before {
+  content: "\2713"; /* 체크 표시 */
+  color: white;
+  font-size: 12px;
+  display: block;
+  text-align: center;
+  line-height: 16px; /* 체크 표시를 중앙에 정렬 */
+}
+
+
 .no-result {
     margin: 0 auto;
     font-weight: bold;

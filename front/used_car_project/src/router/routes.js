@@ -1,5 +1,5 @@
 import productRoutes from './productRoutes';
-
+import tradeRoutes from './tradeRoutes';
 const routes = [
   {
     path: '/',
@@ -16,7 +16,8 @@ const routes = [
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue')
   },
-  ...productRoutes
+  ...productRoutes,
+  ...tradeRoutes
 ]
 
 export default routes
