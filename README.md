@@ -18,13 +18,8 @@
 	•	Node JS 설치
 	•	Quasar 설치
 
-### 2.1 MySQL 데이터베이스 설정
-```
-CREATE DATABASE todo_app;
-CREATE USER 'todo_user'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON todo_app.* TO 'todo_user'@'localhost';
-FLUSH PRIVILEGES;
-```
+### 2.1 MongoDB 데이터베이스 설정
+MongoDB가 설치된 상태에서 mongod 서비스를 시작하고, 2.2.5 데이터베이스 및 컬렉션을 생성합니다:
 
 ### 2.2 소스 빌드 및 실행 방법
 
