@@ -191,7 +191,7 @@ Response
 }
 ```
 5️⃣ GET /products : 제품 목록 조회<br>
-Query Parameter : page, limit<br>
+Query Parameter : page, limit, name, min_price, max_price, min_distance, max_distance, min_year, max_year, manufacturers, types, grade, category<br>
 Response
 ```
 {
